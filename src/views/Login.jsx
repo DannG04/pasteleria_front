@@ -89,14 +89,6 @@ export default function Login() {
               Iniciar Sesión
             </Button>
           </Box>
-
-          <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-            <Typography variant="caption" color="text.secondary">
-              Credenciales de prueba:<br />
-              Usuario: admin<br />
-              Contraseña: admin123
-            </Typography>
-          </Box>
         </CardContent>
       </Card>
     </Box>
