@@ -40,7 +40,7 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
             <List>
               {cart.map((item) => (
                 <ListItem
-                  key={item.id}
+                  key={`${item.id}-${item.variant}`}
                   sx={{
                     flexDirection: 'column',
                     alignItems: 'flex-start',
@@ -51,9 +51,20 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
                   }}
                 >
                   <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                      {item.name}
-                    </Typography>
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                        {item.name}
+                      </Typography>
+                      {item.variant && (
+                        <Typography variant="caption" color="text.secondary">
+                          {item.variant === 'small' && 'Pequeño'}
+                          {item.variant === 'medium' && 'Mediano'}
+                          {item.variant === 'big' && 'Grande'}
+                          {item.variant === 'retail' && 'Al por menor'}
+                          {item.variant === 'wholesale' && 'Al por mayor'}
+                        </Typography>
+                      )}
+                    </Box>
                     <Box
                         component="img"
                         src={item.image}
@@ -67,7 +78,7 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
                   </Typography>
                   <IconButton
                       size="small"
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => removeFromCart(item.id, item.variant)}
                       sx={{ color: 'error.main' }}
                     >
                       <DeleteIcon fontSize="small" />
@@ -77,7 +88,7 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <IconButton
                         size="small"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.variant, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                       >
                         <RemoveIcon fontSize="small" />
@@ -87,7 +98,7 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
                       </Typography>
                       <IconButton
                         size="small"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.variant, item.quantity + 1)}
                       >
                         <AddIcon fontSize="small" />
                       </IconButton>

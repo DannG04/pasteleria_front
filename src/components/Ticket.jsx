@@ -5,9 +5,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
 import PrintIcon from '@mui/icons-material/Print';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 
-export default function Ticket({ open, onClose, cart, total }) {
+export default function Ticket({ open, onClose, cart, total, purchaseResult }) {
   
   const currentDate = new Date().toLocaleDateString('es-MX', {
     year: 'numeric',
@@ -25,6 +28,19 @@ export default function Ticket({ open, onClose, cart, total }) {
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogContent>
         <Box sx={{ textAlign: 'center', py: 2, fontFamily: 'monospace' }}>
+          {/* Purchase Status Alert */}
+          {purchaseResult && (
+            <Alert
+              severity={purchaseResult.success ? 'success' : 'error'}
+              icon={purchaseResult.success ? <CheckCircleIcon /> : <ErrorIcon />}
+              sx={{ mb: 2, textAlign: 'left' }}
+            >
+              {purchaseResult.success
+                ? `${purchaseResult.message} (ID: ${purchaseResult.ventaId})`
+                : `Error: ${purchaseResult.error}`}
+            </Alert>
+          )}
+
           {/* Header */}
           <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
             Pastelería SweetObject

@@ -15,10 +15,11 @@ import Ticket from './Ticket';
 import logo from '../assets/logo.png';
 
 export default function Navbar() {
-  const { cartCount, cart, cartTotal, clearCart } = useCart();
+  const { cartCount, cart, cartTotal, completePurchase } = useCart();
   const { mode, toggleTheme } = useThemeMode();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [ticketOpen, setTicketOpen] = useState(false);
+  const [purchaseResult, setPurchaseResult] = useState(null);
 
   const handleOpenDrawer = () => {
     setDrawerOpen(true);
@@ -28,14 +29,16 @@ export default function Navbar() {
     setDrawerOpen(false);
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     setDrawerOpen(false);
+    const result = await completePurchase();
+    setPurchaseResult(result);
     setTicketOpen(true);
   };
 
   const handleCloseTicket = () => {
     setTicketOpen(false);
-    clearCart();
+    setPurchaseResult(null);
   };
 
   return (
@@ -88,6 +91,7 @@ export default function Navbar() {
         onClose={handleCloseTicket}
         cart={cart}
         total={cartTotal}
+        purchaseResult={purchaseResult}
       />
     </>
   );

@@ -15,13 +15,11 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import InventoryIcon from '@mui/icons-material/Inventory';
-import CategoryIcon from '@mui/icons-material/Category';
 import StoreIcon from '@mui/icons-material/Store';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
-import ProductManager from '../components/ProductManager';
 import InventoryManager from '../components/InventoryManager';
 import logo from '../assets/logo.png';
 
@@ -29,7 +27,6 @@ const drawerWidth = 240;
 
 export default function AdminDashboard() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [selectedView, setSelectedView] = useState('products');
   const { logout } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const navigate = useNavigate();
@@ -47,11 +44,6 @@ export default function AdminDashboard() {
     navigate('/');
   };
 
-  const menuItems = [
-    { id: 'products', label: 'Gestión de Productos', icon: <CategoryIcon /> },
-    { id: 'inventory', label: 'Inventario', icon: <InventoryIcon /> },
-  ];
-
   const drawer = (
     <Box>
       <Toolbar>
@@ -63,17 +55,12 @@ export default function AdminDashboard() {
          />
       </Toolbar>
       <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.id} disablePadding>
-            <ListItemButton
-              selected={selectedView === item.id}
-              onClick={() => setSelectedView(item.id)}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        <ListItem disablePadding>
+          <ListItemButton selected>
+            <ListItemIcon><InventoryIcon /></ListItemIcon>
+            <ListItemText primary="Gestión de Inventario" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Box>
   );
@@ -157,8 +144,7 @@ export default function AdminDashboard() {
         }}
       >
         <Toolbar />
-        {selectedView === 'products' && <ProductManager />}
-        {selectedView === 'inventory' && <InventoryManager />}
+        <InventoryManager />
       </Box>
     </Box>
   );
