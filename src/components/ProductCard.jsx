@@ -12,6 +12,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -20,6 +21,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
+import TextField from '@mui/material/TextField';
 import { useCart } from '../context/CartContext';
 import { Button } from '@mui/material';
 
@@ -28,6 +30,7 @@ export default function ProductCard({ product }) {
   const [openIngredientsDialog, setOpenIngredientsDialog] = React.useState(false);
   const [openSizeDialog, setOpenSizeDialog] = React.useState(false);
   const [selectedVariant, setSelectedVariant] = React.useState('medium');
+  const [quantity, setQuantity] = React.useState(1);
 
   const hasVariants = product.precio && typeof product.precio === 'object';
   const variantType = hasVariants 
@@ -63,7 +66,7 @@ export default function ProductCard({ product }) {
   }, [product.nombre, product.name, product.disponible, isProductAvailable, selectedVariant, isSelectedVariantAvailable]);
 
   // Obtener el precio según la variante seleccionada
-  const getPriceByVariant = (variant) => {
+  const getPriceByVariant = (variant, qty = 1) => {
     if (!product.precio) return parseFloat(product.price || 0);
     
     if (typeof product.precio === 'object') {
@@ -76,18 +79,16 @@ export default function ProductCard({ product }) {
         };
         return prices[variant] || prices.medium;
       } else {
-        // Pan
-        const prices = {
-          retail: parseFloat(product.precio.retail_sale || 0),
-          wholesale: parseFloat(product.precio.wholesale || 0),
-        };
-        return prices[variant] || prices.retail;
+        // Pan - determinar precio según cantidad
+        const retailPrice = parseFloat(product.precio.retail_sale || 0);
+        const wholesalePrice = parseFloat(product.precio.wholesale || 0);
+        return qty >= 12 ? wholesalePrice : retailPrice;
       }
     }
     return parseFloat(product.precio || product.price || 0);
   };
 
-  const currentPrice = getPriceByVariant(selectedVariant);
+  const currentPrice = getPriceByVariant(selectedVariant, quantity);
 
   const handleOpenIngredientsDialog = () => {
     setOpenIngredientsDialog(true);
@@ -98,6 +99,9 @@ export default function ProductCard({ product }) {
   };
 
   const handleOpenSizeDialog = () => {
+    // Reiniciar cantidad
+    setQuantity(1);
+    
     // Establecer variante por defecto según el tipo y disponibilidad
     if (variantType === 'size') {
       // Seleccionar la primera variante disponible
@@ -115,7 +119,7 @@ export default function ProductCard({ product }) {
         setSelectedVariant('medium');
       }
     } else if (variantType === 'amount') {
-      setSelectedVariant('retail');
+      setSelectedVariant('retail'); // Se mantiene para compatibilidad
     }
     setOpenSizeDialog(true);
   };
@@ -162,18 +166,28 @@ export default function ProductCard({ product }) {
       return;
     }
     
+    const finalPrice = getPriceByVariant(selectedVariant, quantity);
+    const finalVariant = variantType === 'amount' 
+      ? (quantity >= 12 ? 'wholesale' : 'retail')
+      : selectedVariant;
+    
     const normalizedProduct = {
       id: product.id,
       name: product.nombre || product.name,
-      price: getPriceByVariant(selectedVariant),
+      price: finalPrice,
       description: product.descripcion || product.description,
       image: product.imagen_url || product.imagen || product.image || 'https://via.placeholder.com/300',
       ingredients: product.ingredientes || product.ingredients || [],
-      variant: selectedVariant,
+      variant: finalVariant,
       tipo_categoria: product.tipo_categoria,
       disponible: product.disponible,
     };
-    addToCart(normalizedProduct);
+    
+    // Agregar al carrito la cantidad especificada
+    for (let i = 0; i < quantity; i++) {
+      addToCart(normalizedProduct);
+    }
+    
     handleCloseSizeDialog();
   };
 
@@ -282,18 +296,16 @@ export default function ProductCard({ product }) {
       {/* Diálogo de Selección de Tamaño/Variante */}
       {hasVariants && (
         <Dialog open={openSizeDialog} onClose={handleCloseSizeDialog} maxWidth="xs" fullWidth>
-          <DialogTitle>Seleccionar {variantType === 'size' ? 'Tamaño' : 'Tipo de Venta'}</DialogTitle>
+          <DialogTitle>Seleccionar {variantType === 'size' ? 'Tamaño' : 'Cantidad'}</DialogTitle>
           <DialogContent>
             <FormControl component="fieldset" sx={{ mt: 2, width: '100%' }}>
-              <FormLabel component="legend">
-                {variantType === 'size' ? 'Elige el tamaño' : 'Elige el tipo'}
-              </FormLabel>
-              <RadioGroup
-                value={selectedVariant}
-                onChange={(e) => setSelectedVariant(e.target.value)}
-              >
-                {variantType === 'size' ? (
-                  <>
+              {variantType === 'size' ? (
+                <>
+                  <FormLabel component="legend">Elige el tamaño</FormLabel>
+                  <RadioGroup
+                    value={selectedVariant}
+                    onChange={(e) => setSelectedVariant(e.target.value)}
+                  >
                     <FormControlLabel
                       value="small"
                       control={<Radio />}
@@ -342,38 +354,50 @@ export default function ProductCard({ product }) {
                       }
                       sx={{ width: '100%' }}
                     />
-                  </>
-                ) : (
-                  <>
-                    <FormControlLabel
-                      value="retail"
-                      control={<Radio />}
-                      label={
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pr: 2 }}>
-                          <Typography>Al por menor</Typography>
-                          <Typography fontWeight="bold">
-                            ${parseFloat(product.precio?.retail_sale || 0).toFixed(2)}
-                          </Typography>
-                        </Box>
-                      }
-                      sx={{ width: '100%' }}
-                    />
-                    <FormControlLabel
-                      value="wholesale"
-                      control={<Radio />}
-                      label={
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pr: 2 }}>
-                          <Typography>Al por mayor</Typography>
-                          <Typography fontWeight="bold">
-                            ${parseFloat(product.precio?.wholesale || 0).toFixed(2)}
-                          </Typography>
-                        </Box>
-                      }
-                      sx={{ width: '100%' }}
-                    />
-                  </>
-                )}
-              </RadioGroup>
+                  </RadioGroup>
+                </>
+              ) : (
+                <>
+                  <FormLabel component="legend">Cantidad de productos</FormLabel>
+                  <TextField
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    inputProps={{ min: 1, step: 1 }}
+                    fullWidth
+                    sx={{ mt: 2, mb: 2 }}
+                    helperText={quantity >= 12 
+                      ? `Precio al por mayor: $${parseFloat(product.precio?.wholesale || 0).toFixed(2)} c/u`
+                      : `Precio al por menor: $${parseFloat(product.precio?.retail_sale || 0).toFixed(2)} c/u`
+                    }
+                  />
+                  <Box sx={{ 
+                    p: 2, 
+                    backgroundColor: 'background.default', 
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider'
+                  }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2">Cantidad:</Typography>
+                      <Typography variant="body2" fontWeight="bold">{quantity}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2">Precio unitario:</Typography>
+                      <Typography variant="body2" fontWeight="bold">
+                        ${getPriceByVariant('retail', quantity).toFixed(2)}
+                      </Typography>
+                    </Box>
+                    <Divider sx={{ my: 1 }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="subtitle1" fontWeight="bold">Total:</Typography>
+                      <Typography variant="subtitle1" fontWeight="bold" color="primary">
+                        ${(getPriceByVariant('retail', quantity) * quantity).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </>
+              )}
             </FormControl>
           </DialogContent>
           <DialogActions>
