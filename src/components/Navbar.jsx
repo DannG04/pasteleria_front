@@ -12,7 +12,7 @@ import { useCart } from '../context/CartContext';
 import { useThemeMode } from '../context/ThemeContext';
 import CartDrawer from './CartDrawer';
 import Ticket from './Ticket';
-import logo from '../assets/logo.png';
+import logo from '../assets/Logo.png';
 
 export default function Navbar() {
   const { cartCount, cart, cartTotal, completePurchase } = useCart();
@@ -20,6 +20,7 @@ export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [ticketOpen, setTicketOpen] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState(null);
+  const [ticketData, setTicketData] = useState({ cart: [], total: 0 });
 
   const handleOpenDrawer = () => {
     setDrawerOpen(true);
@@ -31,6 +32,8 @@ export default function Navbar() {
 
   const handleCheckout = async () => {
     setDrawerOpen(false);
+    // Guardar una copia del carrito y total ANTES de completar la compra
+    setTicketData({ cart: [...cart], total: cartTotal });
     const result = await completePurchase();
     setPurchaseResult(result);
     setTicketOpen(true);
@@ -89,8 +92,8 @@ export default function Navbar() {
       <Ticket
         open={ticketOpen}
         onClose={handleCloseTicket}
-        cart={cart}
-        total={cartTotal}
+        cart={ticketData.cart}
+        total={ticketData.total}
         purchaseResult={purchaseResult}
       />
     </>

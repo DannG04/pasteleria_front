@@ -21,7 +21,7 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
 import InventoryManager from '../components/InventoryManager';
-import logo from '../assets/logo.png';
+import logo from '../assets/Logo.png';
 
 const drawerWidth = 240;
 
