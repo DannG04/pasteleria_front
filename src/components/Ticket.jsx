@@ -8,7 +8,6 @@ import Button from '@mui/material/Button';
 import PrintIcon from '@mui/icons-material/Print';
 
 export default function Ticket({ open, onClose, cart, total }) {
-  const [ticketNumber] = React.useState(() => Math.floor(Math.random() * 100000));
   
   const currentDate = new Date().toLocaleDateString('es-MX', {
     year: 'numeric',
@@ -28,20 +27,20 @@ export default function Ticket({ open, onClose, cart, total }) {
         <Box sx={{ textAlign: 'center', py: 2, fontFamily: 'monospace' }}>
           {/* Header */}
           <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Pastelería Dulce Sabor
+            Pastelería SweetObject
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Calle Principal #123
+            Universidad de la Sierra Sur
           </Typography>
           <Typography variant="body2" gutterBottom>
-            Tel: (555) 123-4567
+            Tel: 951-510-8874
           </Typography>
           
           <Divider sx={{ my: 2, borderStyle: 'dashed' }} />
 
           {/* Ticket Info */}
           <Box sx={{ textAlign: 'left', mb: 2 }}>
-            <Typography variant="body2">Ticket: #{ticketNumber}</Typography>
+            <Typography variant="body2">Fecha: </Typography>
             <Typography variant="body2">{currentDate}</Typography>
           </Box>
 
@@ -85,7 +84,7 @@ export default function Ticket({ open, onClose, cart, total }) {
             ¡Gracias por su compra!
           </Typography>
           <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-            Vuelva pronto
+            Pase al mostrador a recoger su pedido.
           </Typography>
 
           {/* Action Buttons */}

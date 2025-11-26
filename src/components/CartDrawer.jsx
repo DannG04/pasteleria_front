@@ -54,18 +54,24 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
                     <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                       {item.name}
                     </Typography>
-                    <IconButton
+                    <Box
+                        component="img"
+                        src={item.image}
+                        alt={item.name}
+                        sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 1 }}
+                  />
+                  </Box>
+                  
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    ${item.price.toFixed(2)} c/u
+                  </Typography>
+                  <IconButton
                       size="small"
                       onClick={() => removeFromCart(item.id)}
                       sx={{ color: 'error.main' }}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
-                  </Box>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    ${item.price.toFixed(2)} c/u
-                  </Typography>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

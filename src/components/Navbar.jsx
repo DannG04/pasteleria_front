@@ -12,6 +12,7 @@ import { useCart } from '../context/CartContext';
 import { useThemeMode } from '../context/ThemeContext';
 import CartDrawer from './CartDrawer';
 import Ticket from './Ticket';
+import logo from '../assets/logo.png';
 
 export default function Navbar() {
   const { cartCount, cart, cartTotal, clearCart } = useCart();
@@ -39,11 +40,19 @@ export default function Navbar() {
 
   return (
     <>
-      <Box sx={{ flexGrow: 1 }}>
+      <Box sx={{ flexGrow: 4 }}>
         <AppBar position="static">
           <Toolbar>
+            {/* Logo de la aplicacion */}
+            <Box
+                component="img"
+                src={logo}
+                alt="Logo"
+                sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 50, mr: 2 }}
+            />
+            
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Pastelería Dulce Sabor
+              Pastelería SweetObject
             </Typography>
             <IconButton
               size="large"
