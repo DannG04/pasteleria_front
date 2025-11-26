@@ -50,16 +50,16 @@ export default function ProductCard({ product }) {
           </Typography>
         </CardContent>
         <CardActions disableSpacing sx={{ justifyContent: 'space-between', padding: 2 }}>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<AddShoppingCartIcon />}
             onClick={() => addToCart(product)}
             size="small"
           >
             Agregar
           </Button>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             startIcon={<InfoIcon />}
             onClick={handleOpenDialog}
             size="small"

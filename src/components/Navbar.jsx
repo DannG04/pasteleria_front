@@ -45,12 +45,12 @@ export default function Navbar() {
           <Toolbar>
             {/* Logo de la aplicacion */}
             <Box
-                component="img"
-                src={logo}
-                alt="Logo"
-                sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 50, mr: 2 }}
+              component="img"
+              src={logo}
+              alt="Logo"
+              sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 50, mr: 2 }}
             />
-            
+
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
               Pastelería SweetObject
             </Typography>
@@ -77,8 +77,8 @@ export default function Navbar() {
         </AppBar>
       </Box>
 
-      <CartDrawer 
-        open={drawerOpen} 
+      <CartDrawer
+        open={drawerOpen}
         onClose={handleCloseDrawer}
         onCheckout={handleCheckout}
       />

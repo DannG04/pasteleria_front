@@ -23,6 +23,7 @@ import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
 import ProductManager from '../components/ProductManager';
 import InventoryManager from '../components/InventoryManager';
+import logo from '../assets/logo.png';
 
 const drawerWidth = 240;
 
@@ -54,9 +55,12 @@ export default function AdminDashboard() {
   const drawer = (
     <Box>
       <Toolbar>
-        <Typography variant="h6" noWrap>
-          Admin Panel
-        </Typography>
+        <Box
+          component="img"
+          src={logo}
+          alt="Logo"
+          sx={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 50, ml: 'auto', mr: 'auto' }}
+         />
       </Toolbar>
       <List>
         {menuItems.map((item) => (
@@ -93,7 +97,7 @@ export default function AdminDashboard() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Pastelería Dulce Sabor - Administración
+            Pastelería  - Administración
           </Typography>
           <IconButton color="inherit" onClick={toggleTheme} sx={{ mr: 1 }}>
             {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
