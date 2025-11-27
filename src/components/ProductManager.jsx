@@ -150,7 +150,7 @@ export default function ProductManager() {
         </Table>
       </TableContainer>
 
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth disableRestoreFocus>
         <DialogTitle>
           {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
         </DialogTitle>

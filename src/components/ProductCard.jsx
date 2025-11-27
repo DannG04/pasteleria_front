@@ -60,10 +60,6 @@ export default function ProductCard({ product }) {
   // Disponibilidad de la variante seleccionada (para el diálogo)
   const isSelectedVariantAvailable = getProductAvailability(selectedVariant);
   
-  // Debug: verificar el estado de disponibilidad
-  React.useEffect(() => {
-    console.log(`Producto: ${product.nombre || product.name}, Disponible:`, product.disponible, 'isAvailable:', isProductAvailable, 'variant:', selectedVariant, 'variantAvailable:', isSelectedVariantAvailable);
-  }, [product.nombre, product.name, product.disponible, isProductAvailable, selectedVariant, isSelectedVariantAvailable]);
 
   // Obtener el precio según la variante seleccionada
   const getPriceByVariant = (variant, qty = 1) => {
@@ -183,10 +179,18 @@ export default function ProductCard({ product }) {
       disponible: product.disponible,
     };
     
-    // Agregar al carrito la cantidad especificada
-    for (let i = 0; i < quantity; i++) {
-      addToCart(normalizedProduct);
+    // Si es pan o extra, guardar los precios originales
+    if ((product.tipo_categoria === 'pan' || product.tipo_categoria === 'extra') && 
+        product.precio && typeof product.precio === 'object') {
+      normalizedProduct.precioOriginal = {
+        retail_sale: parseFloat(product.precio.retail_sale || 0),
+        wholesale: parseFloat(product.precio.wholesale || 0)
+      };
     }
+    
+    // Agregar al carrito con la cantidad especificada
+    normalizedProduct.quantity = quantity;
+    addToCart(normalizedProduct);
     
     handleCloseSizeDialog();
   };
@@ -274,7 +278,11 @@ export default function ProductCard({ product }) {
       </Card>
 
       {/* Diálogo de Ingredientes */}
-      <Dialog open={openIngredientsDialog} onClose={handleCloseIngredientsDialog}>
+      <Dialog 
+        open={openIngredientsDialog} 
+        onClose={handleCloseIngredientsDialog}
+        disableRestoreFocus
+      >
         <DialogTitle>{product.nombre || product.name}</DialogTitle>
         <DialogContent>
           <Typography variant="subtitle1" gutterBottom>
@@ -295,7 +303,13 @@ export default function ProductCard({ product }) {
 
       {/* Diálogo de Selección de Tamaño/Variante */}
       {hasVariants && (
-        <Dialog open={openSizeDialog} onClose={handleCloseSizeDialog} maxWidth="xs" fullWidth>
+        <Dialog 
+          open={openSizeDialog} 
+          onClose={handleCloseSizeDialog} 
+          maxWidth="xs" 
+          fullWidth
+          disableRestoreFocus
+        >
           <DialogTitle>Seleccionar {variantType === 'size' ? 'Tamaño' : 'Cantidad'}</DialogTitle>
           <DialogContent>
             <FormControl component="fieldset" sx={{ mt: 2, width: '100%' }}>

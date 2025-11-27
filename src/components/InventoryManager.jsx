@@ -29,10 +29,11 @@ import Checkbox from '@mui/material/Checkbox';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { postresAPI, panAPI, bebidasAPI, extrasAPI } from '../services/apiService';
+import { postresAPI, panAPI, bebidasAPI, extrasAPI, productosAPI } from '../services/apiService';
 
 export default function InventoryManager() {
   const [tabValue, setTabValue] = useState(0);
+  const [productos, setProductos] = useState([]);
   const [postres, setPostres] = useState([]);
   const [panes, setPanes] = useState([]);
   const [bebidas, setBebidas] = useState([]);
@@ -52,12 +53,14 @@ export default function InventoryManager() {
     setLoading(true);
     setError(null);
     try {
-      const [postresData, panesData, bebidasData, extrasData] = await Promise.all([
+      const [productosData, postresData, panesData, bebidasData, extrasData] = await Promise.all([
+        productosAPI.getAll(),
         postresAPI.getAll(),
         panAPI.getAll(),
         bebidasAPI.getAll(),
         extrasAPI.getAll(),
       ]);
+      setProductos(productosData);
       setPostres(postresData);
       setPanes(panesData);
       setBebidas(bebidasData);
@@ -71,7 +74,7 @@ export default function InventoryManager() {
   };
 
   const getCurrentType = () => {
-    const types = ['postre', 'pan', 'bebida', 'extra'];
+    const types = ['producto', 'postre', 'pan', 'bebida', 'extra'];
     return types[tabValue];
   };
 
@@ -370,20 +373,97 @@ export default function InventoryManager() {
     }
   };
 
-  const renderTable = (data, type) => (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>ID</TableCell>
-            <TableCell>Nombre</TableCell>
-            <TableCell>Precio</TableCell>
-            <TableCell>Disponibilidad</TableCell>
-            <TableCell align="right">Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {data.map((item) => {
+  const renderProductosGeneralTable = (data) => {
+    const sortedData = [...data].sort((a, b) => a.id - b.id);
+    
+    return (
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>ID</strong></TableCell>
+              <TableCell><strong>Nombre</strong></TableCell>
+              <TableCell><strong>Descripción</strong></TableCell>
+              <TableCell><strong>Imagen URL</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <Typography variant="body2" color="text.secondary">
+                    No hay productos registrados
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedData.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.id}</TableCell>
+                  <TableCell>
+                    <Typography fontWeight="medium">{item.nombre}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.descripcion || '-'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {item.imagen_url ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box
+                          component="img"
+                          src={item.imagen_url}
+                          alt={item.nombre}
+                          sx={{
+                            width: 50,
+                            height: 50,
+                            objectFit: 'cover',
+                            borderRadius: 1,
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ 
+                          maxWidth: 200, 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {item.imagen_url}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">-</Typography>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
+  const renderTable = (data, type) => {
+    const sortedData = [...data].sort((a, b) => a.id - b.id);
+    
+    return (
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Precio</TableCell>
+              <TableCell>Disponibilidad</TableCell>
+              <TableCell align="right">Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedData.map((item) => {
             return (
               <TableRow key={item.id}>
                 <TableCell>{item.id}</TableCell>
@@ -421,7 +501,8 @@ export default function InventoryManager() {
         </TableBody>
       </Table>
     </TableContainer>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -437,13 +518,15 @@ export default function InventoryManager() {
         <Typography variant="h4">
           Gestión de Inventario
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenDialog()}
-        >
-          Nuevo Producto
-        </Button>
+        {tabValue !== 0 && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenDialog()}
+          >
+            Nuevo Producto
+          </Button>
+        )}
       </Box>
 
       {error && (
@@ -460,6 +543,7 @@ export default function InventoryManager() {
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+          <Tab label={`Productos General (${productos.length})`} />
           <Tab label={`Postres (${postres.length})`} />
           <Tab label={`Panes (${panes.length})`} />
           <Tab label={`Bebidas (${bebidas.length})`} />
@@ -467,13 +551,14 @@ export default function InventoryManager() {
         </Tabs>
       </Box>
 
-      {tabValue === 0 && renderTable(postres, 'postre')}
-      {tabValue === 1 && renderTable(panes, 'pan')}
-      {tabValue === 2 && renderTable(bebidas, 'bebida')}
-      {tabValue === 3 && renderTable(extras, 'extra')}
+      {tabValue === 0 && renderProductosGeneralTable(productos)}
+      {tabValue === 1 && renderTable(postres, 'postre')}
+      {tabValue === 2 && renderTable(panes, 'pan')}
+      {tabValue === 3 && renderTable(bebidas, 'bebida')}
+      {tabValue === 4 && renderTable(extras, 'extra')}
 
       {/* Dialog para crear/editar producto */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth disableRestoreFocus>
         <DialogTitle>
           {editingItem ? 'Editar Producto' : `Nuevo ${getCurrentType() === 'postre' ? 'Postre' : getCurrentType() === 'pan' ? 'Pan' : getCurrentType() === 'bebida' ? 'Bebida' : 'Extra'}`}
         </DialogTitle>

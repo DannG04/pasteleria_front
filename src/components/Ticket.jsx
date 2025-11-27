@@ -25,7 +25,7 @@ export default function Ticket({ open, onClose, cart, total, purchaseResult }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth disableRestoreFocus>
       <DialogContent>
         <Box sx={{ textAlign: 'center', py: 2, fontFamily: 'monospace' }}>
           {/* Purchase Status Alert */}

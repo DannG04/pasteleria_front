@@ -16,17 +16,20 @@ import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import StoreIcon from '@mui/icons-material/Store';
+import HistoryIcon from '@mui/icons-material/History';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
 import InventoryManager from '../components/InventoryManager';
+import SalesHistory from '../components/SalesHistory';
 import logo from '../assets/Logo.png';
 
 const drawerWidth = 240;
 
 export default function AdminDashboard() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [selectedView, setSelectedView] = useState('inventory');
   const { logout } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
   const navigate = useNavigate();
@@ -56,9 +59,21 @@ export default function AdminDashboard() {
       </Toolbar>
       <List>
         <ListItem disablePadding>
-          <ListItemButton selected>
+          <ListItemButton 
+            selected={selectedView === 'inventory'}
+            onClick={() => setSelectedView('inventory')}
+          >
             <ListItemIcon><InventoryIcon /></ListItemIcon>
             <ListItemText primary="Gestión de Inventario" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton 
+            selected={selectedView === 'sales'}
+            onClick={() => setSelectedView('sales')}
+          >
+            <ListItemIcon><HistoryIcon /></ListItemIcon>
+            <ListItemText primary="Historial de Ventas" />
           </ListItemButton>
         </ListItem>
       </List>
@@ -144,7 +159,8 @@ export default function AdminDashboard() {
         }}
       >
         <Toolbar />
-        <InventoryManager />
+        {selectedView === 'inventory' && <InventoryManager />}
+        {selectedView === 'sales' && <SalesHistory />}
       </Box>
     </Box>
   );

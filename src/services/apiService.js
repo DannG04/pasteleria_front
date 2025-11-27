@@ -168,6 +168,21 @@ export const extrasAPI = {
   },
 };
 
+// ==================== PRODUCTOS (TABLA GENERAL) ====================
+export const productosAPI = {
+  getAll: async () => {
+    const response = await fetch(`${API_BASE_URL}/productos/`);
+    if (!response.ok) throw new Error('Error al obtener productos');
+    return response.json();
+  },
+
+  getById: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/productos/${id}`);
+    if (!response.ok) throw new Error(`Error al obtener producto ${id}`);
+    return response.json();
+  },
+};
+
 // ==================== VENTAS ====================
 export const ventasAPI = {
   getAll: async () => {
@@ -205,6 +220,12 @@ export const ventasAPI = {
       const error = await response.json();
       throw new Error(error.detail || 'Error al crear venta');
     }
+    return response.json();
+  },
+
+  getHistorial: async () => {
+    const response = await fetch(`${API_BASE_URL}/ventas/historial/detalles`);
+    if (!response.ok) throw new Error('Error al obtener historial de ventas');
     return response.json();
   },
 };

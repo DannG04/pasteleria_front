@@ -15,6 +15,96 @@ import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
 import { useCart } from '../context/CartContext';
 
+const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
+  return (
+    <ListItem
+      sx={{
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        border: '1px solid #e0e0e0',
+        borderRadius: 1,
+        mb: 2,
+        p: 2
+      }}
+    >
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+        <Box>
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+            {item.name}
+          </Typography>
+          {item.variant && (
+            <Typography variant="caption" color="text.secondary">
+              {item.variant === 'small' && 'Pequeño'}
+              {item.variant === 'medium' && 'Mediano'}
+              {item.variant === 'big' && 'Grande'}
+              {item.variant === 'retail' && 'Al por menor'}
+              {item.variant === 'wholesale' && 'Al por mayor'}
+            </Typography>
+          )}
+          {(item.tipo_categoria === 'pan' || item.tipo_categoria === 'extra') && item.precioOriginal && (
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                display: 'block',
+                color: item.quantity >= 12 ? 'success.main' : 'info.main',
+                fontWeight: 'medium'
+              }}
+            >
+              {item.quantity >= 12 ? '✓ Precio mayoreo' : 'Precio menudeo'}
+            </Typography>
+          )}
+        </Box>
+        <Box
+          component="img"
+          src={item.image}
+          alt={item.name}
+          sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 1 }}
+        />
+      </Box>
+      
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        ${item.price.toFixed(2)} c/u
+      </Typography>
+      <IconButton
+        size="small"
+        onClick={() => onRemove(item.id, item.variant)}
+        sx={{ color: 'error.main' }}
+        disableRipple
+      >
+        <DeleteIcon fontSize="small" />
+      </IconButton>
+
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <IconButton
+            size="small"
+            onClick={() => onUpdateQuantity(item.id, item.variant, item.quantity - 1)}
+            disabled={item.quantity <= 1}
+            disableRipple
+          >
+            <RemoveIcon fontSize="small" />
+          </IconButton>
+          <Typography variant="body1" sx={{ minWidth: 30, textAlign: 'center' }}>
+            {item.quantity}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={() => onUpdateQuantity(item.id, item.variant, item.quantity + 1)}
+            disableRipple
+          >
+            <AddIcon fontSize="small" />
+          </IconButton>
+        </Box>
+        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+          ${(item.price * item.quantity).toFixed(2)}
+        </Typography>
+      </Box>
+    </ListItem>
+  );
+};
+
+CartItem.displayName = 'CartItem';
+
 export default function CartDrawer({ open, onClose, onCheckout }) {
   const { cart, cartTotal, removeFromCart, updateQuantity } = useCart();
 
@@ -38,76 +128,13 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
             </Typography>
           ) : (
             <List>
-              {cart.map((item) => (
-                <ListItem
-                  key={`${item.id}-${item.variant}`}
-                  sx={{
-                    flexDirection: 'column',
-                    alignItems: 'flex-start',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 1,
-                    mb: 2,
-                    p: 2
-                  }}
-                >
-                  <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Box>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                        {item.name}
-                      </Typography>
-                      {item.variant && (
-                        <Typography variant="caption" color="text.secondary">
-                          {item.variant === 'small' && 'Pequeño'}
-                          {item.variant === 'medium' && 'Mediano'}
-                          {item.variant === 'big' && 'Grande'}
-                          {item.variant === 'retail' && 'Al por menor'}
-                          {item.variant === 'wholesale' && 'Al por mayor'}
-                        </Typography>
-                      )}
-                    </Box>
-                    <Box
-                        component="img"
-                        src={item.image}
-                        alt={item.name}
-                        sx={{ width: 50, height: 50, objectFit: 'cover', borderRadius: 1 }}
-                  />
-                  </Box>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    ${item.price.toFixed(2)} c/u
-                  </Typography>
-                  <IconButton
-                      size="small"
-                      onClick={() => removeFromCart(item.id, item.variant)}
-                      sx={{ color: 'error.main' }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <IconButton
-                        size="small"
-                        onClick={() => updateQuantity(item.id, item.variant, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                      >
-                        <RemoveIcon fontSize="small" />
-                      </IconButton>
-                      <Typography variant="body1" sx={{ minWidth: 30, textAlign: 'center' }}>
-                        {item.quantity}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => updateQuantity(item.id, item.variant, item.quantity + 1)}
-                      >
-                        <AddIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                      ${(item.price * item.quantity).toFixed(2)}
-                    </Typography>
-                  </Box>
-                </ListItem>
+              {cart.map((item, index) => (
+                <CartItem
+                  key={`cart-item-${item.id}-${index}`}
+                  item={item}
+                  onUpdateQuantity={updateQuantity}
+                  onRemove={removeFromCart}
+                />
               ))}
             </List>
           )}
