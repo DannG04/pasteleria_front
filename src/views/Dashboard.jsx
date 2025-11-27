@@ -38,6 +38,10 @@ function Dashboard() {
                 ...extras.map(e => ({ ...e, tipo_categoria: 'extra' })),
             ];
 
+            // Debug: verificar campo disponible
+            console.log('Productos cargados:', allProducts);
+            console.log('Ejemplo de producto:', allProducts[0]);
+
             setProducts(allProducts);
         } catch (err) {
             setError('Error al cargar los productos: ' + err.message);

@@ -29,11 +29,38 @@ export default function ProductCard({ product }) {
   const [openSizeDialog, setOpenSizeDialog] = React.useState(false);
   const [selectedVariant, setSelectedVariant] = React.useState('medium');
 
-  // Determinar si el producto tiene variantes
   const hasVariants = product.precio && typeof product.precio === 'object';
   const variantType = hasVariants 
     ? (product.precio.small !== undefined ? 'size' : 'amount')
     : null;
+  
+  const getProductAvailability = (variant) => {
+    if (!product.disponible) return true; // Si no hay info de disponible, asumir disponible
+    
+    // Si disponible es un objeto (productos con variantes de tamaño)
+    if (typeof product.disponible === 'object') {
+      // Para productos con tamaños (postres y bebidas)
+      if (variant === 'small' || variant === 'medium' || variant === 'big') {
+        return product.disponible[variant] !== false;
+      }
+      // Si tiene alguna variante disponible, mostrar como disponible
+      return product.disponible.small || product.disponible.medium || product.disponible.big;
+    }
+    
+    // Si es un booleano simple
+    return product.disponible !== false;
+  };
+  
+  // Disponibilidad general del producto (para mostrar en la tarjeta)
+  const isProductAvailable = getProductAvailability(null);
+  
+  // Disponibilidad de la variante seleccionada (para el diálogo)
+  const isSelectedVariantAvailable = getProductAvailability(selectedVariant);
+  
+  // Debug: verificar el estado de disponibilidad
+  React.useEffect(() => {
+    console.log(`Producto: ${product.nombre || product.name}, Disponible:`, product.disponible, 'isAvailable:', isProductAvailable, 'variant:', selectedVariant, 'variantAvailable:', isSelectedVariantAvailable);
+  }, [product.nombre, product.name, product.disponible, isProductAvailable, selectedVariant, isSelectedVariantAvailable]);
 
   // Obtener el precio según la variante seleccionada
   const getPriceByVariant = (variant) => {
@@ -71,9 +98,22 @@ export default function ProductCard({ product }) {
   };
 
   const handleOpenSizeDialog = () => {
-    // Establecer variante por defecto según el tipo
+    // Establecer variante por defecto según el tipo y disponibilidad
     if (variantType === 'size') {
-      setSelectedVariant('medium');
+      // Seleccionar la primera variante disponible
+      if (product.disponible && typeof product.disponible === 'object') {
+        if (product.disponible.medium) {
+          setSelectedVariant('medium');
+        } else if (product.disponible.small) {
+          setSelectedVariant('small');
+        } else if (product.disponible.big) {
+          setSelectedVariant('big');
+        } else {
+          setSelectedVariant('medium'); // fallback
+        }
+      } else {
+        setSelectedVariant('medium');
+      }
     } else if (variantType === 'amount') {
       setSelectedVariant('retail');
     }
@@ -85,9 +125,21 @@ export default function ProductCard({ product }) {
   };
 
   const handleAddToCart = () => {
+    // Para productos con variantes, abrir el diálogo donde se verificará cada variante
     if (hasVariants) {
+      // Verificar si al menos una variante está disponible
+      if (typeof product.disponible === 'object') {
+        const hasAnyAvailable = product.disponible.small || product.disponible.medium || product.disponible.big;
+        if (!hasAnyAvailable) {
+          return; // No abrir diálogo si ninguna variante está disponible
+        }
+      }
       handleOpenSizeDialog();
     } else {
+      // Para productos sin variantes, verificar disponibilidad directa
+      if (!getProductAvailability('medium')) {
+        return;
+      }
       const normalizedProduct = {
         id: product.id,
         name: product.nombre || product.name,
@@ -97,12 +149,19 @@ export default function ProductCard({ product }) {
         ingredients: product.ingredientes || product.ingredients || [],
         variant: 'medium',
         tipo_categoria: product.tipo_categoria,
+        disponible: product.disponible,
       };
       addToCart(normalizedProduct);
     }
   };
 
   const handleConfirmAddToCart = () => {
+    // Verificar disponibilidad de la variante seleccionada
+    if (!getProductAvailability(selectedVariant)) {
+      handleCloseSizeDialog();
+      return;
+    }
+    
     const normalizedProduct = {
       id: product.id,
       name: product.nombre || product.name,
@@ -112,6 +171,7 @@ export default function ProductCard({ product }) {
       ingredients: product.ingredientes || product.ingredients || [],
       variant: selectedVariant,
       tipo_categoria: product.tipo_categoria,
+      disponible: product.disponible,
     };
     addToCart(normalizedProduct);
     handleCloseSizeDialog();
@@ -149,7 +209,14 @@ export default function ProductCard({ product }) {
 
   return (
     <>
-      <Card sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Card sx={{ 
+        width: '100%', 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        opacity: isProductAvailable ? 1 : 0.6,
+        position: 'relative'
+      }}>
         <CardHeader
           title={product.nombre || product.name}
           subheader={getPriceDisplay()}
@@ -177,8 +244,9 @@ export default function ProductCard({ product }) {
             startIcon={<AddShoppingCartIcon />}
             onClick={handleAddToCart}
             size="small"
+            disabled={!isProductAvailable}
           >
-            Agregar
+            {isProductAvailable ? 'Agregar' : 'No Disponible'}
           </Button>
           <Button
             variant="outlined"
@@ -229,10 +297,13 @@ export default function ProductCard({ product }) {
                     <FormControlLabel
                       value="small"
                       control={<Radio />}
+                      disabled={product.disponible && typeof product.disponible === 'object' && !product.disponible.small}
                       label={
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pr: 2 }}>
-                          <Typography>Pequeño</Typography>
-                          <Typography fontWeight="bold">
+                          <Typography color={product.disponible && typeof product.disponible === 'object' && !product.disponible.small ? 'text.disabled' : 'inherit'}>
+                            Pequeño {product.disponible && typeof product.disponible === 'object' && !product.disponible.small && '(No disponible)'}
+                          </Typography>
+                          <Typography fontWeight="bold" color={product.disponible && typeof product.disponible === 'object' && !product.disponible.small ? 'text.disabled' : 'inherit'}>
                             ${parseFloat(product.precio?.small || 0).toFixed(2)}
                           </Typography>
                         </Box>
@@ -242,10 +313,13 @@ export default function ProductCard({ product }) {
                     <FormControlLabel
                       value="medium"
                       control={<Radio />}
+                      disabled={product.disponible && typeof product.disponible === 'object' && !product.disponible.medium}
                       label={
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pr: 2 }}>
-                          <Typography>Mediano</Typography>
-                          <Typography fontWeight="bold">
+                          <Typography color={product.disponible && typeof product.disponible === 'object' && !product.disponible.medium ? 'text.disabled' : 'inherit'}>
+                            Mediano {product.disponible && typeof product.disponible === 'object' && !product.disponible.medium && '(No disponible)'}
+                          </Typography>
+                          <Typography fontWeight="bold" color={product.disponible && typeof product.disponible === 'object' && !product.disponible.medium ? 'text.disabled' : 'inherit'}>
                             ${parseFloat(product.precio?.medium || 0).toFixed(2)}
                           </Typography>
                         </Box>
@@ -255,10 +329,13 @@ export default function ProductCard({ product }) {
                     <FormControlLabel
                       value="big"
                       control={<Radio />}
+                      disabled={product.disponible && typeof product.disponible === 'object' && !product.disponible.big}
                       label={
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pr: 2 }}>
-                          <Typography>Grande</Typography>
-                          <Typography fontWeight="bold">
+                          <Typography color={product.disponible && typeof product.disponible === 'object' && !product.disponible.big ? 'text.disabled' : 'inherit'}>
+                            Grande {product.disponible && typeof product.disponible === 'object' && !product.disponible.big && '(No disponible)'}
+                          </Typography>
+                          <Typography fontWeight="bold" color={product.disponible && typeof product.disponible === 'object' && !product.disponible.big ? 'text.disabled' : 'inherit'}>
                             ${parseFloat(product.precio?.big || 0).toFixed(2)}
                           </Typography>
                         </Box>
@@ -301,8 +378,12 @@ export default function ProductCard({ product }) {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseSizeDialog}>Cancelar</Button>
-            <Button onClick={handleConfirmAddToCart} variant="contained">
-              Agregar al Carrito
+            <Button 
+              onClick={handleConfirmAddToCart} 
+              variant="contained"
+              disabled={!isSelectedVariantAvailable}
+            >
+              {isSelectedVariantAvailable ? 'Agregar al Carrito' : 'No Disponible'}
             </Button>
           </DialogActions>
         </Dialog>

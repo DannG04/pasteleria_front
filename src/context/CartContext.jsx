@@ -9,6 +9,12 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
 
   const addToCart = (product) => {
+    // Validar disponibilidad del producto
+    if (product.disponible === false) {
+      console.warn('No se puede agregar al carrito: producto no disponible');
+      return;
+    }
+    
     setCart((prevCart) => {
       const existingItem = prevCart.find(
         (item) => item.id === product.id && item.variant === product.variant
